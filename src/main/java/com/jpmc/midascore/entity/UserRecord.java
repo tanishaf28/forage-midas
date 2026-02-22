@@ -1,4 +1,4 @@
-package com.jpmc.midascore.entity;
+package com.jpmc.midascore.entity; //contains entities/dto ,If you see @Entity, that means it maps to a SQL table.
 
 import jakarta.persistence.*;
 
@@ -18,7 +18,7 @@ public class UserRecord {
     protected UserRecord() {
     }
 
-    public UserRecord(String name, float balance) {
+    public UserRecord(String name, float balance) { //constructor to create new user records. We dont need to pass in the id because it is auto generated.
         this.name = name;
         this.balance = balance;
     }

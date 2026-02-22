@@ -1,4 +1,4 @@
-package com.jpmc.midascore;
+package com.jpmc.midascore; 
 
 import com.jpmc.midascore.component.DatabaseConduit;
 import com.jpmc.midascore.entity.UserRecord;

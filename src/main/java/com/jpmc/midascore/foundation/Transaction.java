@@ -1,4 +1,4 @@
-package com.jpmc.midascore.foundation;
+package com.jpmc.midascore.foundation; //This is a simple POJO class that represents a transaction between two users. It has three fields: senderId, recipientId, and amount. It also has a default constructor, a parameterized constructor, getters and setters for each field, and a toString method for debugging purposes. The @JsonIgnoreProperties annotation is used to ignore any unknown properties when deserializing JSON data into this class.
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
