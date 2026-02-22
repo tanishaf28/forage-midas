@@ -44,9 +44,9 @@ Midas Core follows a **4-layer architecture**:
 
 ### Why this design?
 
-- **Kafka decoupling** — the transaction producer never talks directly to Midas Core. If Midas Core is slow or restarted, messages queue safely in Kafka with no data loss.
-- **JPA abstraction** — swapping H2 for PostgreSQL in production requires only a config change, no Java code changes.
-- **REST as a contract** — the Incentive API is consumed via HTTP. Neither team needs to know the other's internal implementation.
+- **Kafka decoupling** : the transaction producer never talks directly to Midas Core. If Midas Core is slow or restarted, messages queue safely in Kafka with no data loss.
+- **JPA abstraction** : swapping H2 for PostgreSQL in production requires only a config change, no Java code changes.
+- **REST as a contract** :the Incentive API is consumed via HTTP. Neither team needs to know the other's internal implementation.
 
 ---
 
@@ -73,8 +73,8 @@ Midas Core follows a **4-layer architecture**:
 
 ### Prerequisites
 
-- **Java 17** — [Download from Oracle](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
-- **Maven 3.x** — [Download](https://maven.apache.org/download.cgi)
+- **Java 17** : [Download from Oracle](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
+- **Maven 3.x** : [Download](https://maven.apache.org/download.cgi)
 - **Git**
 
 ### 1. Fork & Clone
@@ -121,16 +121,16 @@ mvn spring-boot:run
 
 ## Task Breakdown
 
-###  Task 1 — Project Setup
+###  Task 1: Project Setup
 - Added all Maven dependencies to `pom.xml` (Spring Boot, Kafka, H2, JPA, Test)
 - Configured `application.yml` with Kafka topic and server port
 - Verified build: `mvn clean install` → `mvn spring-boot:run`
 
 ---
 
-###  Task 2 — Kafka Listener
+###  Task 2: Kafka Listener
 
-Implemented `KafkaTransactionListener` — a `@Component` that listens to the configured Kafka topic and deserializes each message into a `Transaction` object.
+Implemented `KafkaTransactionListener` : a `@Component` that listens to the configured Kafka topic and deserializes each message into a `Transaction` object.
 ```java
 @KafkaListener(topics = "${general.kafka-topic}", groupId = "midas-core-group")
 public void listen(Transaction transaction) {
@@ -141,10 +141,10 @@ Also implemented `KafkaConsumerConfig` to configure the `ConsumerFactory` with `
 
 ---
 
-### Task 3 — Database Integration
+### Task 3: Database Integration
 
 Integrated H2 + Spring Data JPA:
-- Created `TransactionRecord` — a `@Entity` with `@ManyToOne` relationships to `UserRecord` (sender + recipient)
+- Created `TransactionRecord` : a `@Entity` with `@ManyToOne` relationships to `UserRecord` (sender + recipient)
 - Created `DatabaseConduit` with `@Transactional` `processTransaction()` that validates and persists transactions
 
 **Validation rules:**
@@ -160,11 +160,11 @@ If invalid → discard silently, no DB changes made.
 
 ---
 
-###  Task 4 — Incentive API Integration
+###  Task 4: Incentive API Integration
 Extended `DatabaseConduit` to call the external Incentive API for each valid transaction using `RestTemplate`.
 ---
 
-###  Task 5 — REST API Endpoint
+###  Task 5: REST API Endpoint
 Created `BalanceController` exposing `GET /balance`.The API controller exposes a “/balance” endpoint that responds exclusively to GET requests, accepts a userId as a request parameter, and returns an instance of the provided Balance class serialized to JSON. 
 Integrated the REST Controller directly into Midas Core.
 
@@ -185,19 +185,19 @@ mvn -Dtest=TaskFiveTests test
 
 ## Key Concepts
 ### Why Kafka?
-Kafka decouples the transaction producer from Midas Core. The producer publishes and moves on — Midas Core consumes at its own pace. If Midas Core restarts, it resumes from its last committed offset with **zero message loss**.
+Kafka decouples the transaction producer from Midas Core. The producer publishes and moves onto Midas Core consumes at its own pace. If Midas Core restarts, it resumes from its last committed offset with **zero message loss**.
 
 ### Why SQL (H2) over NoSQL?
-Financial data demands **ACID guarantees**. Atomicity ensures money never disappears between accounts. SQL databases provide this; NoSQL databases trade it for speed. H2 is used here for development convenience — the JPA abstraction makes swapping to PostgreSQL in production a **config-only change**.
+Financial data demands **ACID guarantees**. Atomicity ensures money never disappears between accounts. SQL databases provide this; NoSQL databases trade it for speed. H2 is used here for development convenience  the JPA abstraction makes swapping to PostgreSQL in production a **config-only change**.
 
 ###  Why @Transactional?
-A transaction that debits the sender and credits the recipient must be **atomic** — either both happen or neither does. `@Transactional` wraps the entire method in a DB transaction. If anything throws, all changes roll back automatically.
+A transaction that debits the sender and credits the recipient must be **atomic** either both happen or neither does. `@Transactional` wraps the entire method in a DB transaction. If anything throws, all changes roll back automatically.
 
 ###  Why Constructor Injection?
 Dependencies declared in the constructor can be `final` (immutable), are impossible to forget (won't compile without them), and make the class **trivially testable** by passing mock objects in unit tests.
 
 ###  REST as a Contract
-The Incentive API and Midas Core are owned by different teams. The REST API is their contract — as long as the endpoint and response shape don't change, either service can evolve independently. `@JsonIgnoreProperties(ignoreUnknown = true)` on `Incentive.java` future-proofs Midas Core against the API adding new fields.
+The Incentive API and Midas Core are owned by different teams. The REST API is their contract as long as the endpoint and response shape don't change, either service can evolve independently. `@JsonIgnoreProperties(ignoreUnknown = true)` on `Incentive.java` future-proofs Midas Core against the API adding new fields.
 
 ---
 
@@ -207,9 +207,9 @@ The Incentive API and Midas Core are owned by different teams. The REST API is t
 |---|---|
 | **Apache Kafka** | Message queues decouple services and enable resilient async communication at scale |
 | **Spring Boot Auto-config** | Adding a JAR to the classpath is enough for Spring to configure and wire it |
-| **JPA / Hibernate** | ORM maps Java objects to DB tables — you write Java, Hibernate writes SQL |
-| **@Transactional** | ACID atomicity in one annotation — all DB ops commit or roll back together |
-| **REST API design** | The API is a contract between teams — breaking it breaks consumers |
+| **JPA / Hibernate** | ORM maps Java objects to DB tables  you write Java, Hibernate writes SQL |
+| **@Transactional** | ACID atomicity in one annotation  all DB ops commit or roll back together |
+| **REST API design** | The API is a contract between teams breaking it breaks consumers |
 | **Dependency Injection** | Constructor injection = immutable, testable, explicit dependencies |
 | **Embedded Kafka in tests** | Real-behaviour integration tests without needing a running broker |
 | **Architecture trade-offs** | Good design balances cleanliness against deployment burden and development time |
